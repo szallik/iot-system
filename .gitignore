@@ -1,0 +1,34 @@
+# Sekrety i kopie zapasowe (zawierają klucz sieci ZigBee i hasła)
+.env
+backups/
+*.tgz
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+backend/data/
+
+# Baza danych
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+
+# Frontend
+node_modules/
+frontend/dist/
+
+# Firmware (Arduino / ESP-IDF / PlatformIO)
+build/
+sdkconfig
+*.bin
+*.elf
+*.map
+.pio/
+
+# Edytory, system
+.vscode/
+.idea/
+.DS_Store

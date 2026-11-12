@@ -1,0 +1,60 @@
+# Szablon konfiguracji Zigbee2MQTT.
+# bootstrap.sh tworzy z niego /opt/zigbee2mqtt/data/configuration.yaml
+# (tylko jeśli ten plik jeszcze nie istnieje) i podstawia wartości z .env.
+#
+# Po pierwszym uruchomieniu Z2M zastępuje GENERATE wylosowanymi wartościami.
+# Wygenerowany plik zawiera klucz sieci – NIE dodawać go do repozytorium,
+# kopię robi deploy/backup.sh.
+
+version: 5
+
+homeassistant:
+  enabled: false
+
+frontend:
+  enabled: true
+  port: 8080
+
+mqtt:
+  base_topic: zigbee2mqtt
+  server: mqtt://localhost:1883
+  user: ${Z2M_MQTT_USER}
+  password: ${Z2M_MQTT_PASSWORD}
+
+serial:
+  port: ${ZIGBEE_SERIAL_PORT}
+  adapter: zstack
+  baudrate: 115200
+  rtscts: false
+
+advanced:
+  channel: 11
+  pan_id: GENERATE
+  ext_pan_id: GENERATE
+  network_key: GENERATE
+  log_level: info
+  # Wymagane dla konwertera modułu PIN (data/external_converters/access_1.js)
+  enable_external_js: true
+
+availability:
+  enabled: false
+
+# Nazwy przypisane do adresów IEEE z notatek sprzed awarii (nazyw_urzadzen_iot_3.txt).
+# Po sparowaniu urządzenie od razu dostaje nazwę zgodną z identyfikatorem w backendzie.
+# Moduł PIN (access_1) i ciepłomierz (heat_meter_1) dopisać po sparowaniu,
+# gdy będzie znany ich adres IEEE.
+devices:
+  '0xa4c1380cbaa9eaca':
+    friendly_name: czujnik_temperatury
+  '0xa4c138d0573d40da':
+    friendly_name: czujnik_wibracji
+  '0xf044d3fffe2a5a50':
+    friendly_name: przycisk
+  '0xa4c13879d97f71a0':
+    friendly_name: listwa
+  '0xd878f0fffe0fa836':
+    friendly_name: pilot
+  '0xf044d3fffe014c86':
+    friendly_name: czujnik_obecnosci
+  '0xa4c138acc1df59e7':
+    friendly_name: zarowka_rgb

@@ -28,7 +28,7 @@ Pełna procedura: [docs/instalacja_rpi.md](docs/instalacja_rpi.md).
 ```bash
 git clone <adres-repozytorium> ~/iot-system
 cd ~/iot-system
-cp .env.example .env && nano .env
+cp .env.example .env
 ./deploy/bootstrap.sh
 ```
 
@@ -70,7 +70,7 @@ cd frontend && npm ci && npm run dev
 ## Zasady pracy
 
 - Gałąź `main` zawiera wersję działającą na RPi. Zmiany przez osobne gałęzie (`backend/...`, `frontend/...`, `firmware/...`) i pull requesty.
-- Hasła tylko w `.env` (nie w repozytorium). Kopie `configuration.yaml` Z2M zawierają klucz sieci – również poza repozytorium.
+- Broker MQTT działa bez haseł (środowisko laboratoryjne). Plik `.env` jest lokalny dla RPi i nie trafia do repozytorium.
 - Zmiana nazw urządzeń, tematów MQTT lub API wymaga aktualizacji `docs/` w tym samym pull requeście.
 
 ## Licencja

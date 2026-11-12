@@ -6,7 +6,7 @@
 #
 # Co robi:
 #   1. instaluje git, pobiera repozytorium do ~/iot-system (lub aktualizuje istniejące),
-#   2. jeśli nie ma .env – tworzy go z .env.example i losuje wszystkie hasła,
+#   2. jeśli nie ma .env – tworzy go z .env.example (bez haseł, środowisko laboratoryjne),
 #   3. uruchamia deploy/bootstrap.sh (pakiety, Mosquitto, Zigbee2MQTT, backend, frontend, usługi).
 set -euo pipefail
 
@@ -30,20 +30,11 @@ if [[ -f .env ]]; then
     echo ".env już istnieje – pozostawiam bez zmian."
 else
     cp .env.example .env
-    rnd() { python3 -c "import secrets; print(secrets.token_hex($1))"; }
-    sed -i \
-        -e "s|^MQTT_PASSWORD=.*|MQTT_PASSWORD=$(rnd 12)|" \
-        -e "s|^Z2M_MQTT_PASSWORD=.*|Z2M_MQTT_PASSWORD=$(rnd 12)|" \
-        -e "s|^MQTT_TEST_PASSWORD=.*|MQTT_TEST_PASSWORD=$(rnd 12)|" \
-        -e "s|^JWT_SECRET_KEY=.*|JWT_SECRET_KEY=$(rnd 32)|" \
-        .env
-    chmod 600 .env
-    echo "Utworzono .env z losowymi hasłami."
+    echo "Utworzono .env z .env.example."
 fi
 
 echo "=== 3/3 Instalacja systemu ==="
 ./deploy/bootstrap.sh
 
 echo
-echo "Hasła MQTT (zapisz je w bezpiecznym miejscu, NIE w repozytorium):"
-grep -E '^(MQTT_USERNAME|MQTT_PASSWORD|Z2M_MQTT_USER|Z2M_MQTT_PASSWORD|MQTT_TEST_USER|MQTT_TEST_PASSWORD)=' .env
+echo "Logowanie do aplikacji (konta testowe z backendu): admin / admin123"

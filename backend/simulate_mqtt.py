@@ -7,8 +7,8 @@ import paho.mqtt.client as mqtt
 # Adres i konto brokera ze zmiennych środowiskowych (np. po `set -a; source ../.env; set +a`)
 BROKER = os.getenv("MQTT_BROKER_HOST", "localhost")
 PORT = int(os.getenv("MQTT_BROKER_PORT", "1883"))
-USER = os.getenv("MQTT_TEST_USER", "")
-PASSWORD = os.getenv("MQTT_TEST_PASSWORD", "")
+USER = os.getenv("MQTT_USERNAME", "")
+PASSWORD = os.getenv("MQTT_PASSWORD", "")
 
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="test_simulator")
 if USER:

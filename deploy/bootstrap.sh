@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Instalacja całego systemu na czystym Raspberry Pi OS Lite (64-bit).
 # Uruchomienie (jako zwykły użytkownik, np. iot_lab; skrypt sam używa sudo):
-#   cd ~/iot-system && cp .env.example .env && nano .env && ./deploy/bootstrap.sh
+#   cd ~/iot-system && cp .env.example .env && ./deploy/bootstrap.sh
 # Skrypt można uruchamiać wielokrotnie – kroki już wykonane są pomijane.
 set -euo pipefail
 
@@ -14,13 +14,11 @@ warn() { printf '\033[1;33mUWAGA: %s\033[0m\n' "$*"; }
 die()  { printf '\033[1;31mBŁĄD: %s\033[0m\n' "$*"; exit 1; }
 
 [[ $EUID -ne 0 ]] || die "Uruchom jako zwykły użytkownik (nie przez sudo)."
-[[ -f "$REPO_DIR/.env" ]] || die "Brak pliku .env. Wykonaj: cp .env.example .env i uzupełnij hasła."
+[[ -f "$REPO_DIR/.env" ]] || die "Brak pliku .env. Wykonaj: cp .env.example .env"
 
 set -a; source "$REPO_DIR/.env"; set +a
-: "${MQTT_USERNAME:?}" "${MQTT_PASSWORD:?}" "${Z2M_MQTT_USER:?}" "${Z2M_MQTT_PASSWORD:?}"
-: "${MQTT_TEST_USER:?}" "${MQTT_TEST_PASSWORD:?}" "${ZIGBEE_SERIAL_PORT:?}"
+: "${ZIGBEE_SERIAL_PORT:?}"
 Z2M_VERSION="${Z2M_VERSION:-2.14.2}"
-grep -q 'zmien-' "$REPO_DIR/.env" && warn "W .env zostały domyślne hasła (zmien-...)."
 
 # ---------------------------------------------------------------------------
 log "1/7 Pakiety systemowe"
@@ -34,23 +32,10 @@ command -v pnpm >/dev/null || sudo npm install -g pnpm
 sudo usermod -aG dialout "$USER_NAME"
 
 # ---------------------------------------------------------------------------
-log "2/7 Mosquitto (konta z .env, bez dostępu anonimowego)"
+log "2/7 Mosquitto (port 1883, bez haseł)"
 sudo install -m 644 "$REPO_DIR/config/mosquitto/iot.conf" /etc/mosquitto/conf.d/iot.conf
-sudo rm -f /etc/mosquitto/passwd
-sudo mosquitto_passwd -c -b /etc/mosquitto/passwd "$MQTT_USERNAME" "$MQTT_PASSWORD"
-sudo mosquitto_passwd -b /etc/mosquitto/passwd "$Z2M_MQTT_USER" "$Z2M_MQTT_PASSWORD"
-sudo mosquitto_passwd -b /etc/mosquitto/passwd "$MQTT_TEST_USER" "$MQTT_TEST_PASSWORD"
-sudo chown mosquitto:mosquitto /etc/mosquitto/passwd
-sudo chmod 600 /etc/mosquitto/passwd
 sudo systemctl enable mosquitto
 sudo systemctl restart mosquitto
-
-# Domyślne opcje dla mosquitto_sub/mosquitto_pub, żeby w testach nie podawać hasła
-mkdir -p "$HOME/.config"
-for tool in mosquitto_sub mosquitto_pub; do
-    printf -- '-h localhost\n-u %s\n-P %s\n' "$MQTT_TEST_USER" "$MQTT_TEST_PASSWORD" > "$HOME/.config/$tool"
-    chmod 600 "$HOME/.config/$tool"
-done
 
 # ---------------------------------------------------------------------------
 log "3/7 Zigbee2MQTT $Z2M_VERSION"
@@ -83,7 +68,7 @@ if [[ -f "$Z2M_DIR/data/configuration.yaml" ]]; then
     echo "configuration.yaml już istnieje – pozostawiam bez zmian."
 else
     export ZIGBEE_SERIAL_PORT
-    envsubst '${Z2M_MQTT_USER} ${Z2M_MQTT_PASSWORD} ${ZIGBEE_SERIAL_PORT}' \
+    envsubst '${ZIGBEE_SERIAL_PORT}' \
         < "$REPO_DIR/config/zigbee2mqtt/configuration.yaml.template" \
         > "$Z2M_DIR/data/configuration.yaml"
     chmod 600 "$Z2M_DIR/data/configuration.yaml"

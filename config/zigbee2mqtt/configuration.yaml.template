@@ -3,8 +3,7 @@
 # (tylko jeśli ten plik jeszcze nie istnieje) i podstawia wartości z .env.
 #
 # Po pierwszym uruchomieniu Z2M zastępuje GENERATE wylosowanymi wartościami.
-# Wygenerowany plik zawiera klucz sieci – NIE dodawać go do repozytorium,
-# kopię robi deploy/backup.sh.
+# Kopię wygenerowanego pliku (z kluczem sieci) robi deploy/backup.sh.
 
 version: 5
 
@@ -18,8 +17,6 @@ frontend:
 mqtt:
   base_topic: zigbee2mqtt
   server: mqtt://localhost:1883
-  user: ${Z2M_MQTT_USER}
-  password: ${Z2M_MQTT_PASSWORD}
 
 serial:
   port: ${ZIGBEE_SERIAL_PORT}

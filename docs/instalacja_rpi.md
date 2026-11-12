@@ -59,12 +59,16 @@ Wariant B – repozytorium prywatne lub brak dostępu z RPi: kopia z Maca.
 scp -r iot-system iot_lab@IOTlabGR2.local:~/
 ```
 
-Plik z hasłami (tylko na RPi, nie w gicie):
+Plik ustawień (broker MQTT działa bez haseł, więc nic nie trzeba uzupełniać):
 ```bash
 cd ~/iot-system
 cp .env.example .env
-nano .env        # ustawić hasła MQTT i JWT_SECRET_KEY
-python3 -c "import secrets; print(secrets.token_hex(32))"   # wartość dla JWT_SECRET_KEY
+```
+
+Alternatywa dla rozdz. 4 i 5 – jedna komenda (pobiera repozytorium, tworzy `.env`, uruchamia instalację):
+```bash
+curl -fsSL https://raw.githubusercontent.com/<konto>/iot-system/main/deploy/install.sh \
+  | bash -s -- https://github.com/<konto>/iot-system.git
 ```
 
 Skrócenie czasu na zajęciach: frontend można zbudować wcześniej na Macu i skopiować, bo to statyczne pliki niezależne od architektury. `bootstrap.sh` pominie wtedy budowanie.
@@ -84,7 +88,7 @@ cd ~/iot-system
 Skrypt wykonuje kolejno:
 
 1. instalację pakietów (`mosquitto`, `nodejs`, `npm`, `python3-venv`, `git` i narzędzia) oraz `pnpm`;
-2. konfigurację Mosquitto: konta z `.env`, wyłączenie dostępu anonimowego, plik `~/.config/mosquitto_sub` i `~/.config/mosquitto_pub` z danymi konta testowego;
+2. konfigurację Mosquitto: port 1883, dostęp bez haseł;
 3. pobranie Zigbee2MQTT w wersji z `.env` (2.14.2) do `/opt/zigbee2mqtt` i instalację zależności;
 4. utworzenie `data/configuration.yaml` z szablonu i skopiowanie konwertera modułu PIN do `data/external_converters/`;
 5. środowisko Python backendu (`backend/.venv`);
@@ -140,6 +144,5 @@ Archiwum zawiera `configuration.yaml` (z kluczem sieci), `coordinator_backup.jso
 | `ssh: REMOTE HOST IDENTIFICATION HAS CHANGED` | `ssh-keygen -R IOTlabGR2.local` |
 | Z2M nie startuje, błąd portu szeregowego | `ls -l /dev/serial/by-id/`; poprawić `ZIGBEE_SERIAL_PORT` w `.env` i `serial.port` w `/opt/zigbee2mqtt/data/configuration.yaml`, potem `sudo systemctl restart zigbee2mqtt` |
 | Z2M zgłasza błąd sekcji `devices` | usunąć sekcję `devices` z `configuration.yaml`, nazwy nadać po sparowaniu w interfejsie Z2M |
-| `Connection Refused: not authorised` w `mosquitto_sub` | podać konto jawnie: `mosquitto_sub -h localhost -u tester -P <hasło> -t '#' -v` |
-| `mqtt_connected: false` w `/api/health` | `journalctl -u iot-backend -n 50`; zgodność `MQTT_USERNAME`/`MQTT_PASSWORD` z kontem w Mosquitto |
+| `mqtt_connected: false` w `/api/health` | `systemctl is-active mosquitto`; `journalctl -u iot-backend -n 50` |
 | Konwerter modułu PIN nie jest ładowany | w logu Z2M przy starcie; sprawdzić `advanced.enable_external_js: true` i plik w `data/external_converters/` |

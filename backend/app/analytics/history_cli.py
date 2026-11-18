@@ -9,11 +9,19 @@ from pathlib import Path
 import sys
 
 from .contexts import AdaptiveDelay, ContextGroup, ContextPartition
-from .csv_history import import_measurements, parse_timestamp
+from .csv_history import import_measurements, import_sensor_period, parse_timestamp
 from .sqlite_history import import_sqlite, list_devices
 from .energy import ReceiverModel
 from .strategies import FixedDelay, ScheduleWindow, WeeklySchedule
 from .history_service import jsonable, seconds, simulate_import
+
+
+from .environment import analyze_environment
+from .electricity import analyze_electricity
+from .heat import HEAT_METRICS, summarize_heat
+
+
+SENSOR_COMMANDS = ("environment", "electricity", "heat")
 
 
 def load_strategy(args):
@@ -40,22 +48,61 @@ def load_strategy(args):
                          tuple(seconds(g["delay_seconds"]) for g in config["groups"]))
 
 
+def sensor_result(args, start, end, document):
+    environment = args.command == "environment"
+    metrics = {"environment": (args.metric,), "electricity": ("energy", "power"), "heat": HEAT_METRICS}[args.command]
+    histories = import_sensor_period(args.source_path, device_id=args.device_id, metrics=metrics,
+                                     start=start, end=end, command=args.command)
+    document["source"].update(histories[metrics[0]].source)
+    document["quality"] = {metric: history.quality for metric, history in histories.items()}
+    if not environment:
+        document.update(device_type=args.device_type, device_type_source="user_declared")
+    for metric, history in histories.items():
+        if history.quality["blocking_reasons"]:
+            raise ValueError(metric + ": " + "; ".join(history.quality["blocking_reasons"]))
+    if args.command == "electricity":
+        return analyze_electricity(**histories, start=start, end=end, price_per_kwh=args.price_per_kwh)
+    ttl = seconds(args.ttl_seconds)
+    document["ttl_seconds"] = args.ttl_seconds
+    if environment:
+        document.update(lower_threshold=args.lower_threshold, upper_threshold=args.upper_threshold)
+        return analyze_environment(histories[args.metric], start=start, end=end, ttl=ttl,
+                                   lower_threshold=args.lower_threshold, upper_threshold=args.upper_threshold)
+    return summarize_heat(histories, start=start, end=end, ttl=ttl)
+
+
 def build_parser(source_type="csv"):
     parser = argparse.ArgumentParser(description=f"Offline measurements {source_type}: jakosc i symulacja")
     subparsers = parser.add_subparsers(dest="command", required=True)
-    for command in (("devices", "quality", "simulate") if source_type == "sqlite" else ("quality", "simulate")):
+    for command in (("devices", "quality", "simulate") if source_type == "sqlite" else ("quality", "simulate", *SENSOR_COMMANDS)):
         child = subparsers.add_parser(command)
         child.add_argument("source_path")
         if command == "devices":
             child.set_defaults(device_id=None, metric="occupancy")
         else:
             child.add_argument("--device-id", required=True)
-            child.add_argument("--metric", default="occupancy")
-        child.add_argument("--source-kind", choices=("synthetic", "real", "unknown") if source_type == "sqlite"
-                           else ("synthetic", "hardware", "unspecified"),
-                           default="unknown" if source_type == "sqlite" else "unspecified")
+            if command == "environment":
+                child.add_argument("--metric", required=True, choices=("temperature", "humidity"))
+                child.add_argument("--lower-threshold", type=float)
+                child.add_argument("--upper-threshold", type=float)
+            elif command in ("heat", "electricity"):
+                child.set_defaults(metric=None)
+                device_type = "heat_meter" if command == "heat" else "power_strip"
+                child.add_argument("--device-type", choices=(device_type,), required=True)
+            else:
+                child.add_argument("--metric", default="occupancy")
+            if command == "electricity":
+                child.add_argument("--price-per-kwh", type=float)
+            if command in ("environment", "heat"):
+                child.add_argument("--ttl-seconds", type=float, required=True)
+        source_kinds = ("synthetic", "real", "unknown")
+        default_kind = "unknown"
+        if source_type == "csv" and command in ("quality", "simulate"):
+            source_kinds += ("hardware", "unspecified")
+            default_kind = "unspecified"
+        child.add_argument("--source-kind", choices=source_kinds, default=default_kind)
         child.add_argument("--output", required=True)
-        if command == "simulate" or (source_type == "sqlite" and command == "quality"):
+        if command in (*SENSOR_COMMANDS, "simulate") or (source_type == "sqlite" and command == "quality"):
             child.add_argument("--from", dest="start", required=True)
             child.add_argument("--to", dest="end", required=True)
         if command == "simulate":
@@ -86,12 +133,14 @@ def main(argv=None, *, source_type="csv") -> int:
                 "ttl_seconds": None, "strategy": None, "receiver_model_watts": None, "quality": None}
     code = 0
     try:
-        if args.command == "simulate" or (source_type == "sqlite" and args.command == "quality"):
+        if hasattr(args, "start"):
             start, end = parse_timestamp(args.start), parse_timestamp(args.end)
             if start >= end:
                 raise ValueError("Zakres musi spelniac from < to (koniec wylaczny)")
             document["range"] = {"start": start.isoformat(), "end": end.isoformat(), "end_exclusive": True}
-        if args.command == "devices":
+        if args.command in SENSOR_COMMANDS:
+            document["result"] = sensor_result(args, start, end, document)
+        elif args.command == "devices":
             result = list_devices(args.source_path)
             document["source"].update(result["source"])
             document["devices"] = result["devices"]

@@ -97,6 +97,10 @@ def validate_measurements(records, *, device_id: str, metric: str, source: dict,
             value = Decimal(row["value"].strip())
             if not value.is_finite() or not isfinite(float(value)):
                 raise ValueError()
+            if metric in ("flow", "energy") and value < 0:
+                raise ValueError()
+            if metric == "humidity" and not 0 <= value <= 100:
+                raise ValueError()
             if metric == "occupancy" and value not in (Decimal(0), Decimal(1)):
                 raise ValueError()
         except (InvalidOperation, ValueError, OverflowError):
@@ -134,7 +138,8 @@ def validate_measurements(records, *, device_id: str, metric: str, source: dict,
     if conflicts:
         reasons.append(f"Sprzeczne pomiary dla tego samego czasu: {len(conflicts)}; wymagane wyjasnienie zrodla")
     if invalid_rows:
-        reasons.append(f"Niepoprawne wybrane wiersze: {invalid_rows}; popraw dane przed symulacja")
+        codes = ", ".join(sorted({issue["code"] for issue in issues}))
+        reasons.append(f"Niepoprawne wybrane wiersze: {invalid_rows}; kody: {codes}")
     if malformed:
         reasons.append(f"Uszkodzone rekordy CSV: {malformed}; popraw strukture pliku")
     quality = {
@@ -154,3 +159,17 @@ def validate_measurements(records, *, device_id: str, metric: str, source: dict,
                   "Konflikty blokuja symulacje calego wybranego strumienia, rowniez poza zakresem analizy."],
     }
     return ImportedHistory(source, device_id, metric, tuple(accepted), quality)
+
+
+def period_records(records, *, start, end, include_previous, include_end):
+    parsed = []
+    for record, row in records:
+        try:
+            at = parse_timestamp(row["ts"] if isinstance(row["ts"], str) else "")
+        except ValueError:
+            at = None
+        parsed.append(((record, row), at))
+    previous = max((at for _, at in parsed if at is not None and at < start), default=None) if include_previous else None
+    chosen = [row for row, at in parsed if at is None or start <= at < end
+              or (include_end and at == end) or (previous is not None and at == previous)]
+    return chosen, previous

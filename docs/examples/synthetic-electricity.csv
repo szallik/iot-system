@@ -1,0 +1,7 @@
+id,device_id,metric,value,unit,ts
+1,strip,energy,10,kWh,2026-01-01T08:00:00Z
+2,strip,energy,12,kWh,2026-01-01T08:03:00Z
+3,strip,energy,1,kWh,2026-01-01T08:06:00Z
+4,strip,energy,4,kWh,2026-01-01T08:10:00Z
+5,strip,power,100,W,2026-01-01T08:00:00Z
+6,strip,power,999,W,2026-01-01T08:10:00Z

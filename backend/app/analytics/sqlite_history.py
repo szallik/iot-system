@@ -5,7 +5,7 @@ from pathlib import Path
 import sqlite3
 
 from .core import utc
-from .measurement_history import COLUMNS, parse_timestamp, validate_measurements
+from .measurement_history import COLUMNS, period_records, validate_measurements
 
 
 @contextmanager
@@ -73,16 +73,9 @@ def import_sqlite(path, *, device_id, metric, start, end, max_records=None):
 
 
 def select_period(stream, *, path, device_id, metric, start, end, include_previous=True, include_end=False):
-    parsed = []
-    for row in stream:
-        try:
-            at = parse_timestamp(row["ts"] if isinstance(row["ts"], str) else "")
-        except ValueError:
-            at = None
-        parsed.append((row, at))
-    previous = max((at for _, at in parsed if at is not None and at < start), default=None) if include_previous else None
-    chosen = [row for row, at in parsed if at is None or start <= at < end
-              or (include_end and at == end) or (previous is not None and at == previous)]
+    selected, previous = period_records(enumerate(stream), start=start, end=end,
+                                        include_previous=include_previous, include_end=include_end)
+    chosen = [row for _, row in selected]
     source = source_metadata(path)
     source.update(requested_range={"start": start.isoformat(), "end": end.isoformat(), "end_exclusive": True},
                   timestamp_selection="UTC-normalized; latest pre-start instant plus [from,to); invalid dates retained",

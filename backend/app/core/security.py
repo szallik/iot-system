@@ -1,16 +1,14 @@
 import hashlib
 import hmac
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Optional
-import jwt
 from fastapi import Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-from app.core.config import settings
 from app.core.database import get_db
 
-bearer_scheme = HTTPBearer(auto_error=False)
+from app.core.auth_tokens import bearer_scheme, create_access_token, decode_access_token
 
 
 def utc_now_iso() -> str:
@@ -33,13 +31,6 @@ def verify_secret_with_salt(secret_value: str, stored_hash: str) -> bool:
     return hmac.compare_digest(expected_hash, stored_hash)
 
 
-def create_access_token(data: dict) -> str:
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.JWT_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
-
-
 def get_current_user_optional(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
     db: Session = Depends(get_db),
@@ -49,11 +40,7 @@ def get_current_user_optional(
     if not credentials:
         return None
     try:
-        payload = jwt.decode(
-            credentials.credentials,
-            settings.JWT_SECRET_KEY,
-            algorithms=[settings.JWT_ALGORITHM],
-        )
+        payload = decode_access_token(credentials.credentials)
         user_id = payload.get("sub")
         if user_id is None:
             return None

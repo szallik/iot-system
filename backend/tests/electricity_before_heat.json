@@ -1,0 +1,62 @@
+{
+  "energy_simulated": false,
+  "scope": "whole_power_strip",
+  "energy_unit": "kWh",
+  "power_unit": "W",
+  "energy_kwh": 5.0,
+  "estimated_cost": 6.25,
+  "price_per_kwh": 1.25,
+  "max_power_w": 40.0,
+  "max_power_at": "2026-01-01T08:10:00+00:00",
+  "energy_readings_count": 4,
+  "power_readings_count": 2,
+  "accepted_pairs_count": 2,
+  "skipped_pairs_count": 1,
+  "counter_drops_count": 1,
+  "observed_energy_bounds": {
+    "start": "2026-01-01T08:00:00+00:00",
+    "end": "2026-01-01T09:00:00+00:00"
+  },
+  "used_energy_bounds": {
+    "start": "2026-01-01T08:00:00+00:00",
+    "end": "2026-01-01T09:00:00+00:00"
+  },
+  "covered_seconds": 3000.0,
+  "uncovered_seconds": 600.0,
+  "duration_seconds": 3600.0,
+  "accepted_pairs": [
+    {
+      "start": "2026-01-01T08:00:00+00:00",
+      "end": "2026-01-01T08:10:00+00:00",
+      "duration_seconds": 600.0,
+      "start_kwh": 10.0,
+      "end_kwh": 12.0,
+      "increment_kwh": 2.0
+    },
+    {
+      "start": "2026-01-01T08:20:00+00:00",
+      "end": "2026-01-01T09:00:00+00:00",
+      "duration_seconds": 2400.0,
+      "start_kwh": 1.0,
+      "end_kwh": 4.0,
+      "increment_kwh": 3.0
+    }
+  ],
+  "skipped_pairs": [
+    {
+      "start": "2026-01-01T08:10:00+00:00",
+      "end": "2026-01-01T08:20:00+00:00",
+      "duration_seconds": 600.0,
+      "start_kwh": 12.0,
+      "end_kwh": 1.0,
+      "reason": "counter_reset_or_anomaly"
+    }
+  ],
+  "assumptions": [
+    "Zakladamy ciaglosc licznika miedzy odczytami bez zaobserwowanego spadku; ukrytych resetow nie mozna wykluczyc.",
+    "Dluga przerwa nie uniewaznia przyrostu, ale nie odtwarza przebiegu zuzycia wewnatrz pary.",
+    "Bez interpolacji granic, odczytow sprzed zakresu i szacowania energii przy spadku licznika.",
+    "Koszt obejmuje tylko zaakceptowana energie wedlug jednej stawki, bez oplat stalych i zalozonej waluty.",
+    "Wynik dotyczy calej listwy, nie gniazd; nie opisuje oszczednosci."
+  ]
+}

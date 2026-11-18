@@ -1,0 +1,7 @@
+{
+  "timezone": "Europe/Warsaw",
+  "default_delay_seconds": 120,
+  "windows": [
+    {"weekdays": [0, 1, 2, 3, 4], "start": "08:00", "end": "16:00", "delay_seconds": 600}
+  ]
+}

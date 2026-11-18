@@ -4,6 +4,7 @@ from typing import Tuple, Optional
 from sqlalchemy.orm import Session
 from app.models.entities import User, AccessAttempt, Event
 from app.core.security import verify_secret_with_salt, utc_now_iso
+from app.core.auth_tokens import account_has_access
 
 logger = logging.getLogger("iot.access")
 
@@ -43,7 +44,7 @@ def verify_pin_and_log(
 
     if matched_user is None:
         decision_code = DECISION_INVALID_PIN
-    elif not matched_user.aktywny or matched_user.rola in ("blocked", "guest_no_access", "none"):
+    elif not account_has_access(matched_user.aktywny, matched_user.rola):
         decision_code = DECISION_FORBIDDEN
     else:
         decision_code = DECISION_GRANTED

@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "method": "exhaustive_history_parameter_selection",
+  "status": "recommended",
+  "strategy": {
+    "timezone": "Europe/Warsaw",
+    "groups": [
+      {
+        "name": "workday_day",
+        "weekdays": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "hours": [
+          [
+            "08:00",
+            "16:00"
+          ]
+        ],
+        "delay_seconds": 60.0
+      },
+      {
+        "name": "workday_other",
+        "weekdays": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "hours": [
+          [
+            "00:00",
+            "08:00"
+          ],
+          [
+            "16:00",
+            "24:00"
+          ]
+        ],
+        "delay_seconds": 120.0
+      },
+      {
+        "name": "weekend_day",
+        "weekdays": [
+          5,
+          6
+        ],
+        "hours": [
+          [
+            "08:00",
+            "16:00"
+          ]
+        ],
+        "delay_seconds": 120.0
+      },
+      {
+        "name": "weekend_other",
+        "weekdays": [
+          5,
+          6
+        ],
+        "hours": [
+          [
+            "00:00",
+            "08:00"
+          ],
+          [
+            "16:00",
+            "24:00"
+          ]
+        ],
+        "delay_seconds": 60.0
+      }
+    ]
+  },
+  "timezone": "Europe/Warsaw",
+  "training_periods_utc": [
+    [
+      "2026-01-04T23:00:00+00:00",
+      "2026-01-18T23:00:00+00:00"
+    ]
+  ],
+  "training_duration_seconds": 1209600.0,
+  "receiver_model_watts": {
+    "on_watts": 60,
+    "off_watts": 2
+  },
+  "constraints": {
+    "max_short_returns": 20,
+    "max_shutdowns": 180,
+    "min_known_share": 0.97,
+    "max_uncertain_returns": 6
+  },
+  "candidate_delays_seconds": [
+    60.0,
+    120.0,
+    300.0,
+    600.0,
+    900.0
+  ],
+  "default_delay_seconds": 300.0,
+  "short_return_window_seconds": 120.0,
+  "energy_tolerance_wh": 1e-06,
+  "requirements": {
+    "min_days": 3,
+    "min_complete_episodes": 3,
+    "min_known_seconds_per_day": 1800.0
+  },
+  "groups": [
+    {
+      "name": "workday_day",
+      "weekdays": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "hours": [
+        [
+          "08:00",
+          "16:00"
+        ]
+      ],
+      "reliable_dates": [
+        "2026-01-05",
+        "2026-01-06",
+        "2026-01-07",
+        "2026-01-08",
+        "2026-01-09",
+        "2026-01-12",
+        "2026-01-13",
+        "2026-01-14",
+        "2026-01-15",
+        "2026-01-16"
+      ],
+      "reliable_days": 10,
+      "complete_episodes": 39,
+      "known_seconds": 284640.0,
+      "uses_default": false,
+      "fallback_reasons": [],
+      "delay_seconds": 60.0
+    },
+    {
+      "name": "workday_other",
+      "weekdays": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "hours": [
+        [
+          "00:00",
+          "08:00"
+        ],
+        [
+          "16:00",
+          "24:00"
+        ]
+      ],
+      "reliable_dates": [
+        "2026-01-05",
+        "2026-01-06",
+        "2026-01-07",
+        "2026-01-08",
+        "2026-01-09",
+        "2026-01-12",
+        "2026-01-13",
+        "2026-01-14",
+        "2026-01-15",
+        "2026-01-16"
+      ],
+      "reliable_days": 10,
+      "complete_episodes": 38,
+      "known_seconds": 573120.0,
+      "uses_default": false,
+      "fallback_reasons": [],
+      "delay_seconds": 120.0
+    },
+    {
+      "name": "weekend_day",
+      "weekdays": [
+        5,
+        6
+      ],
+      "hours": [
+        [
+          "08:00",
+          "16:00"
+        ]
+      ],
+      "reliable_dates": [
+        "2026-01-10",
+        "2026-01-11",
+        "2026-01-17",
+        "2026-01-18"
+      ],
+      "reliable_days": 4,
+      "complete_episodes": 15,
+      "known_seconds": 114360.0,
+      "uses_default": false,
+      "fallback_reasons": [],
+      "delay_seconds": 120.0
+    },
+    {
+      "name": "weekend_other",
+      "weekdays": [
+        5,
+        6
+      ],
+      "hours": [
+        [
+          "00:00",
+          "08:00"
+        ],
+        [
+          "16:00",
+          "24:00"
+        ]
+      ],
+      "reliable_dates": [
+        "2026-01-10",
+        "2026-01-11",
+        "2026-01-17",
+        "2026-01-18"
+      ],
+      "reliable_days": 4,
+      "complete_episodes": 14,
+      "known_seconds": 228960.0,
+      "uses_default": false,
+      "fallback_reasons": [],
+      "delay_seconds": 60.0
+    }
+  ],
+  "evaluated_configurations": 625,
+  "reasons": [
+    "Wybrano history_trained_delay:{\"groups\":[{\"delay_seconds\":60.0,\"hours\":[[\"08:00\",\"16:00\"]],\"name\":\"workday_day\",\"weekdays\":[0,1,2,3,4]},{\"delay_seconds\":120.0,\"hours\":[[\"00:00\",\"08:00\"],[\"16:00\",\"24:00\"]],\"name\":\"workday_other\",\"weekdays\":[0,1,2,3,4]},{\"delay_seconds\":120.0,\"hours\":[[\"08:00\",\"16:00\"]],\"name\":\"weekend_day\",\"weekdays\":[5,6]},{\"delay_seconds\":60.0,\"hours\":[[\"00:00\",\"08:00\"],[\"16:00\",\"24:00\"]],\"name\":\"weekend_other\",\"weekdays\":[5,6]}],\"timezone\":\"Europe/Warsaw\"}: spelnia wszystkie ograniczenia.",
+    "Minimalna energia w znanych okresach z tolerancja 1e-06 Wh; remisy: mniej pewnych krotkich powrotow, mniej wylaczen, dluzsze minimalne opoznienie konfiguracji, identyfikator strategii.",
+    "Energia UNKNOWN nie uczestniczy w rankingu."
+  ],
+  "energy_is_simulated": true,
+  "synthetic_data": {
+    "seed": 20260105,
+    "description": "14 training days; holdout excluded from fitting"
+  }
+}

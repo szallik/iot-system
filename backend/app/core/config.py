@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Dict
+from typing import Dict, Literal
+from pydantic import Field
 
 
 class Settings(BaseSettings):
@@ -7,6 +8,11 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     DATABASE_URL: str = "sqlite:///./data/iot_system.db"
+
+    ANALYTICS_MAX_DAYS: int = Field(default=31, gt=0)
+    ANALYTICS_MAX_RECORDS: int = Field(default=20000, gt=0)
+    ANALYTICS_MAX_CONFIGURATIONS: int = Field(default=32, gt=0)
+    ANALYTICS_SOURCE_KIND: Literal["synthetic", "real", "unknown"] = "unknown"
 
     MQTT_BROKER_HOST: str = "192.168.0.107"
     MQTT_BROKER_PORT: int = 1883

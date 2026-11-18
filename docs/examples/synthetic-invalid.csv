@@ -1,0 +1,5 @@
+id,device_id,metric,value,unit,ts
+1,room,humidity,101,%,2026-01-01T08:00:00Z
+2,room,humidity,-1,%,2026-01-01T08:01:00Z
+3,strip,energy,-1,kWh,2026-01-01T08:00:00Z
+4,meter,flow,-1,l/min,2026-01-01T08:00:00Z

@@ -1,0 +1,7 @@
+id,device_id,metric,value,unit,ts
+1,meter,energy,5,kWh,2026-01-01T08:00:00Z
+2,meter,energy,6,kWh,2026-01-01T08:10:00Z
+3,meter,temperature_1,-1,°C,2026-01-01T08:00:00Z
+4,meter,temperature_2,2,°C,2026-01-01T08:00:00Z
+5,meter,flow,2,l/min,2026-01-01T08:00:00Z
+6,meter,power,500,W,2026-01-01T08:00:00Z

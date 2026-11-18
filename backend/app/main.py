@@ -19,7 +19,7 @@ from app.core.exceptions import (
 from app.core.security import hash_secret_with_salt, utc_now_iso
 from app.models.entities import User, Device, Automation
 from app.services.mqtt_service import mqtt_manager
-from app.routers import auth, devices, telemetry, users, access_reports, automations
+from app.routers import auth, devices, telemetry, users, access_reports, automations, analytics
 
 logging.basicConfig(
     level=logging.INFO,
@@ -143,6 +143,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(analytics.router)
 app.include_router(auth.router)
 app.include_router(devices.router)
 app.include_router(telemetry.router)

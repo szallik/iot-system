@@ -14,7 +14,7 @@ Komunikaty w rozdz. 2 pochodzą z notatek z testów sprzed awarii karty SD (`not
 | `listwa` | NOUS A11Z | TS011F | `0xa4c13879d97f71a0` | Router |
 | `pilot` | Tuya TS0044 (Z2M: Moes XH-SY-04Z) | TS0044 | `0xd878f0fffe0fa836` | EndDevice |
 | `czujnik_obecnosci` | Sonoff SNZB-06P | SNZB-06P | `0xf044d3fffe014c86` | Router |
-| `zarowka_rgb` | NOUS P3Z | TS0505B | `0xa4c138acc1df59e7` | brak danych |
+| `zarowka_rgb` | NOUS P3Z | TS0505B | `0xa4c13833a4b8c929` | brak danych |
 | `access_1` | moduł PIN (ESP32-C6) | `ESP32C6_PIN_PAD_V1` | po sparowaniu | EndDevice |
 | `heat_meter_1` | ciepłomierz (ESP32-C6) | do ustalenia | po sparowaniu | do ustalenia |
 | (koordynator) | NOUS E16, Z-Stack 3.x, firmware 20240710 | – | `0x00124b00388a1026` | Coordinator |

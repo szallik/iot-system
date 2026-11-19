@@ -27,7 +27,8 @@ def verify_pin_and_log(
     ts = utc_now_iso()
     try:
         pin_int = int(float(raw_presented_value))
-        pin_candidates = {str(pin_int), f"{pin_int:04d}"}
+        # surowy ciąg zachowuje zera wiodące dłuższych PIN-ów (np. "004213")
+        pin_candidates = {str(pin_int), f"{pin_int:04d}", str(raw_presented_value).strip()}
     except (ValueError, TypeError):
         pin_candidates = {str(raw_presented_value).strip()}
 

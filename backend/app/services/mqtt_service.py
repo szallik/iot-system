@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 import paho.mqtt.client as mqtt
 from typing import Dict, Any
 from sqlalchemy.orm import Session
@@ -7,7 +8,7 @@ from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.security import utc_now_iso
 from app.models.entities import Device, Measurement, Event
-from app.services.access_service import verify_pin_and_log
+from app.services.access_service import verify_pin_and_log, DECISION_GRANTED
 from app.services.automation_service import process_automations
 
 logger = logging.getLogger("iot.mqtt")
@@ -188,10 +189,43 @@ class MQTTManager:
             current_state = json.loads(device.last_state or "{}")
         except Exception:
             current_state = {}
-        current_state.update(payload)
+        previous_state = dict(current_state)
+        # PIN nie trafia do last_state (ani do bazy)
+        current_state.update(
+            {k: v for k, v in payload.items() if k not in ("credential", "presented_value")}
+        )
         device.last_state = json.dumps(current_state)
 
-        # 1. Kontrola PIN
+        # 1a. Kontrola PIN – kontrakt modułu access_1 (docs/modul_pin_specyfikacja.md):
+        #     żądanie {"request_id", "credential"} -> odpowiedź {"request_id", "granted"}
+        if payload.get("credential") is not None and payload.get("request_id") is not None:
+            request_id = payload["request_id"]
+            now_ts = time.time()
+            # Z2M (cache_state) może powtórzyć ostatnie żądanie w kolejnym komunikacie
+            # urządzenia – to samo request_id w ciągu 30 s traktujemy jako duplikat.
+            if (
+                previous_state.get("last_request_id") == request_id
+                and now_ts - float(previous_state.get("last_request_ts", 0)) < 30
+            ):
+                db.commit()
+                return
+            current_state["last_request_id"] = request_id
+            current_state["last_request_ts"] = now_ts
+            device.last_state = json.dumps(current_state)
+            decision_code, _, _ = verify_pin_and_log(
+                db=db,
+                device_id=device_id,
+                raw_presented_value=str(payload["credential"]),
+            )
+            reply_topic = f"{settings.MQTT_BASE_TOPIC}/{raw_device_topic}/set"
+            self.client.publish(
+                reply_topic,
+                json.dumps({"request_id": request_id, "granted": decision_code == DECISION_GRANTED}),
+                qos=1,
+            )
+            return
+
+        # 1b. Kontrola PIN – dawny format (presented_value -> multistate_output)
         if "presented_value" in payload and payload["presented_value"] is not None:
             decision_code, _, _ = verify_pin_and_log(
                 db=db,

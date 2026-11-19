@@ -36,6 +36,13 @@ advanced:
 availability:
   enabled: false
 
+# PIN i numer żądania z modułu kontroli dostępu nie są przechowywane w pamięci
+# podręcznej Z2M – inaczej Z2M dołączałby je do kolejnych komunikatów urządzenia.
+device_options:
+  filtered_cache:
+    - '^credential$'
+    - '^request_id$'
+
 # Nazwy przypisane do adresów IEEE z notatek sprzed awarii (nazyw_urzadzen_iot_3.txt).
 # Po sparowaniu urządzenie od razu dostaje nazwę zgodną z identyfikatorem w backendzie.
 # Moduł PIN (access_1) i ciepłomierz (heat_meter_1) dopisać po sparowaniu,
@@ -53,5 +60,5 @@ devices:
     friendly_name: pilot
   '0xf044d3fffe014c86':
     friendly_name: czujnik_obecnosci
-  '0xa4c138acc1df59e7':
+  '0xa4c13833a4b8c929':
     friendly_name: zarowka_rgb
